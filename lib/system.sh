@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 show_cpu(){ echo "SoC: $(getprop ro.soc.model 2>/dev/null || getprop ro.hardware 2>/dev/null || uname -m)"; grep -m1 -E '^(Hardware|model name|Processor)' /proc/cpuinfo 2>/dev/null || true; echo "Cores: $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo '?')"; for f in /sys/devices/system/cpu/cpu0/cpufreq/scaling_{cur_freq,max_freq}; do [[ -r "$f" ]] && echo "$(basename "$f"): $(cat "$f") kHz"; done; }
 show_memory(){ awk '/MemTotal|MemAvailable|MemFree|SwapTotal|SwapFree/ {printf "%-14s %8.0f MB\n",$1,$2/1024}' /proc/meminfo 2>/dev/null; }
 show_storage(){ df -h "$HOME" /storage/emulated/0 2>/dev/null | awk 'NR==1 || !seen[$1]++'; }
