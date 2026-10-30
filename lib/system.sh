@@ -86,44 +86,63 @@ battery_translate() {
 
 show_battery() {
   local b=/sys/class/power_supply/battery
-  local found=0 f value api_json
-  for f in capacity status health temperature voltage_now current_now charge_full charge_full_design; do
-    [[ -r "$b/$f" ]] || continue
-    found=1
-    value="$(cat "$b/$f" 2>/dev/null)"
-    case "$f" in
-      temperature) [[ "$value" =~ ^[0-9]+$ ]] && value="$(awk -v v="$value" 'BEGIN {printf "%.1f °C",v/10}')" ;;
-      voltage_now) [[ "$value" =~ ^[0-9]+$ ]] && value="$(awk -v v="$value" 'BEGIN {printf "%.3f V",v/1000000}')" ;;
-      current_now) [[ "$value" =~ ^-?[0-9]+$ ]] && value="$(awk -v v="$value" 'BEGIN {printf "%.0f mA",v/1000}')" ;;
-    esac
-    printf '%-18s %s\n' "$f" "$value"
-  done
-  if (( ! found )) && command -v termux-battery-status >/dev/null 2>&1; then
+  local api_json="" percent="" status="" health="" plugged="" temp="" voltage="" current="" technology=""
+  local width bar filled empty fill emptybar color key raw
+  if [[ -r "$b/capacity" ]]; then
+    percent="$(cat "$b/capacity" 2>/dev/null)"
+    status="$(cat "$b/status" 2>/dev/null)"
+    health="$(cat "$b/health" 2>/dev/null)"
+    temp="$(cat "$b/temp" 2>/dev/null)"
+    voltage="$(cat "$b/voltage_now" 2>/dev/null)"
+    current="$(cat "$b/current_now" 2>/dev/null)"
+  elif command -v termux-battery-status >/dev/null 2>&1; then
     api_json="$(termux-battery-status 2>/dev/null || true)"
-    if [[ -n "$api_json" && "$api_json" != "{}" ]]; then
-      local key raw translated label
-      for key in percentage status health plugged temperature voltage current technology; do
-        raw="$(battery_json_value "$api_json" "$key")"
-        [[ -n "$raw" ]] || continue
-        case "$key" in
-          percentage) label="$MSG_BATTERY_PERCENT"; translated="$raw%" ;;
-          status) label="$MSG_BATTERY_STATUS"; translated="$(battery_translate status "$raw")" ;;
-          health) label="$MSG_BATTERY_HEALTH"; translated="$(battery_translate health "$raw")" ;;
-          plugged) label="$MSG_BATTERY_POWER_SOURCE"; translated="$(battery_translate plugged "$raw")" ;;
-          temperature) label="$MSG_BATTERY_TEMPERATURE"; translated="$raw °C" ;;
-          voltage) label="$MSG_BATTERY_VOLTAGE"; translated="$raw mV" ;;
-          current) label="$MSG_BATTERY_CURRENT"; translated="$raw mA" ;;
-          technology) label="$MSG_BATTERY_TECHNOLOGY"; translated="$raw" ;;
-        esac
-        printf '%-20s %s\n' "$label" "$translated"
-      done
-    else
-      printf '%s\n' "$MSG_BATTERY_API_FAILED"
-    fi
-  elif (( ! found )); then
-    printf '%s\n' "$MSG_DATA_UNAVAILABLE"
-    printf '%s\n' "$MSG_BATTERY_API_HINT"
+    percent="$(battery_json_value "$api_json" percentage)"
+    status="$(battery_json_value "$api_json" status)"
+    health="$(battery_json_value "$api_json" health)"
+    plugged="$(battery_json_value "$api_json" plugged)"
+    temp="$(battery_json_value "$api_json" temperature)"
+    voltage="$(battery_json_value "$api_json" voltage)"
+    current="$(battery_json_value "$api_json" current)"
+    technology="$(battery_json_value "$api_json" technology)"
   fi
+
+  if [[ ! "$percent" =~ ^[0-9]+$ ]]; then
+    printf '%s\n' "$MSG_DATA_UNAVAILABLE" "$MSG_BATTERY_API_HINT"
+    return
+  fi
+  (( percent > 100 )) && percent=100
+  width="$(ui_width)"
+  printf '\033[1;32m  ◉ %s\033[0m\n' "$MSG_BATTERY"
+  printf '\n  \033[1;37m%s%%\033[0m  %s\n' "$percent" "$MSG_BATTERY_REMAINING"
+  bar=$((width-8))
+  (( bar > 48 )) && bar=48
+  (( bar < 10 )) && bar=10
+  filled=$((percent*bar/100))
+  empty=$((bar-filled))
+  printf -v fill '%*s' "$filled" ''
+  fill="${fill// /█}"
+  printf -v emptybar '%*s' "$empty" ''
+  emptybar="${emptybar// /░}"
+  if (( percent <= 15 )); then color='31'; elif (( percent <= 35 )); then color='33'; else color='32'; fi
+  printf '  \033[1;%sm%s\033[2m%s\033[0m\n' "$color" "$fill" "$emptybar"
+  printf '\n'
+  [[ -n "$status" ]] && printf '  %-20s %s\n' "$MSG_BATTERY_STATUS" "$(battery_translate status "$status")"
+  [[ -n "$health" ]] && printf '  %-20s %s\n' "$MSG_BATTERY_HEALTH" "$(battery_translate health "$health")"
+  [[ -n "$plugged" ]] && printf '  %-20s %s\n' "$MSG_BATTERY_POWER_SOURCE" "$(battery_translate plugged "$plugged")"
+  if [[ "$temp" =~ ^[0-9]+$ ]]; then
+    if [[ -r "$b/temp" ]]; then temp="$(awk -v v="$temp" 'BEGIN {printf "%.1f",v/10}')"; fi
+    printf '  %-20s %s °C\n' "$MSG_BATTERY_TEMPERATURE" "$temp"
+  fi
+  if [[ "$voltage" =~ ^[0-9]+$ ]]; then
+    if [[ -r "$b/voltage_now" ]]; then voltage="$(awk -v v="$voltage" 'BEGIN {printf "%.3f",v/1000000}')"; fi
+    printf '  %-20s %s V\n' "$MSG_BATTERY_VOLTAGE" "$voltage"
+  fi
+  if [[ "$current" =~ ^-?[0-9]+$ ]]; then
+    if [[ -r "$b/current_now" ]]; then current="$(awk -v v="$current" 'BEGIN {printf "%.0f",v/1000}')"; fi
+    printf '  %-20s %s mA\n' "$MSG_BATTERY_CURRENT" "$current"
+  fi
+  [[ -n "$technology" ]] && printf '  %-20s %s\n' "$MSG_BATTERY_TECHNOLOGY" "$technology"
 }
 
 show_display() {
