@@ -87,7 +87,7 @@ battery_translate() {
 show_battery() {
   local b=/sys/class/power_supply/battery
   local api_json="" percent="" status="" health="" plugged="" temp="" voltage="" current="" technology=""
-  local width bar filled empty fill emptybar color key raw
+  local width bar filled empty fill emptybar color key
   if [[ -r "$b/capacity" ]]; then
     percent="$(cat "$b/capacity" 2>/dev/null)"
     status="$(cat "$b/status" 2>/dev/null)"
