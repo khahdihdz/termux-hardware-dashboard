@@ -4,7 +4,7 @@ main_menu() {
   local choice
   while true; do
     render_dashboard
-    read -r -p "  $MSG_PROMPT " choice || break
+    read -r -p "  $MSG_PROMPT > " choice || break
     case "$choice" in
       1) section "$MSG_OVERVIEW" show_overview ;;
       2) section "$MSG_CPU" show_cpu ;;
@@ -26,21 +26,24 @@ main_menu() {
 }
 
 render_dashboard() {
+  local width
   clear 2>/dev/null || true
-  printf '\033[1;32m'
-  printf '  ████████╗███████╗██████╗ ███╗   ███╗██╗   ██╗██╗  ██╗\n'
-  printf '  ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║   ██║╚██╗██╔╝\n'
-  printf '     ██║   █████╗  ██████╔╝██╔████╔██║██║   ██║ ╚███╔╝ \n'
-  printf '     ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║   ██║ ██╔██╗ \n'
-  printf '     ██║   ███████╗██║  ██║██║ ╚═╝ ██║╚██████╔╝██╔╝ ██╗\n'
-  printf '     ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝\n'
-  printf '\033[0m'
-  ui_header "HARDWARE CONTROL CENTER  v$APP_VERSION"
+  width="$(ui_width)"
+  if (( width >= 68 )); then
+    printf '\033[1;32m'
+    printf '  ████████╗███████╗██████╗ ███╗   ███╗██╗   ██╗██╗  ██╗\n'
+    printf '  ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║   ██║╚██╗██╔╝\n'
+    printf '     ██║   █████╗  ██████╔╝██╔████╔██║██║   ██║ ╚███╔╝ \n'
+    printf '     ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║   ██║ ██╔██╗ \n'
+    printf '     ██║   ███████╗██║  ██║██║ ╚═╝ ██║╚██████╔╝██╔╝ ██╗\n'
+    printf '     ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝\n'
+    printf '\033[0m'
+  fi
+  ui_header "HARDWARE CONTROL CENTER v$APP_VERSION"
   printf '\033[1;32m  [*]\033[0m %s\n' "$MSG_SUBTITLE"
   printf '\033[1;32m  [*]\033[0m %s: \033[1;37m%s\033[0m\n' "$MSG_DEVICE" "$(device_summary)"
   printf '\033[1;32m  [*]\033[0m %s\n' "$(system_summary)"
   ui_rule
-  printf '\033[1;37m  %-10s %-*s %s\n\033[0m' "$MSG_RESOURCE" 18 "$MSG_TELEMETRY" "$MSG_LOAD"
   dashboard_metric "$MSG_CPU" "$(cpu_summary)" "$(cpu_percent)" 32
   dashboard_metric "$MSG_MEMORY" "$(memory_summary)" "$(memory_percent)" 36
   dashboard_metric "$MSG_BATTERY" "$(battery_summary)" "$(battery_percent)" 33
@@ -48,22 +51,22 @@ render_dashboard() {
   ui_rule
   printf '\033[1;32m  [ MODULES ]\033[0m\n'
   render_menu_items
-  ui_footer "[0] $MSG_EXIT   [R] $MSG_REFRESH"
+  ui_footer "[0] $MSG_EXIT  [R] $MSG_REFRESH"
 }
 
 render_menu_items() {
   local width
   width="$(ui_width)"
   if (( width >= 64 )); then
-    printf '  \033[1;32m01\033[0m  %-17s  \033[1;32m02\033[0m  %s\n' "$MSG_OVERVIEW" "$MSG_CPU"
-    printf '  \033[1;32m03\033[0m  %-17s  \033[1;32m04\033[0m  %s\n' "$MSG_GPU" "$MSG_MEMORY"
-    printf '  \033[1;32m05\033[0m  %-17s  \033[1;32m06\033[0m  %s\n' "$MSG_STORAGE" "$MSG_BATTERY"
-    printf '  \033[1;32m07\033[0m  %-17s  \033[1;32m08\033[0m  %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM"
-    printf '  \033[1;32m09\033[0m  %-17s  \033[1;32m10\033[0m  %s\n' "$MSG_SENSORS" "$MSG_NETWORK"
-    printf '  \033[1;32m11\033[0m  %-17s  \033[1;32m12\033[0m  %s\n' "$MSG_DIAG" "$MSG_SETTINGS"
+    printf '  \033[1;32m01\033[0m %-16s  \033[1;32m02\033[0m %s\n' "$MSG_OVERVIEW" "$MSG_CPU"
+    printf '  \033[1;32m03\033[0m %-16s  \033[1;32m04\033[0m %s\n' "$MSG_GPU" "$MSG_MEMORY"
+    printf '  \033[1;32m05\033[0m %-16s  \033[1;32m06\033[0m %s\n' "$MSG_STORAGE" "$MSG_BATTERY"
+    printf '  \033[1;32m07\033[0m %-16s  \033[1;32m08\033[0m %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM"
+    printf '  \033[1;32m09\033[0m %-16s  \033[1;32m10\033[0m %s\n' "$MSG_SENSORS" "$MSG_NETWORK"
+    printf '  \033[1;32m11\033[0m %-16s  \033[1;32m12\033[0m %s\n' "$MSG_DIAG" "$MSG_SETTINGS"
   else
-    printf '  \033[1;32m01\033[0m  %s\n  \033[1;32m02\033[0m  %s\n  \033[1;32m03\033[0m  %s\n  \033[1;32m04\033[0m  %s\n  \033[1;32m05\033[0m  %s\n  \033[1;32m06\033[0m  %s\n' "$MSG_OVERVIEW" "$MSG_CPU" "$MSG_GPU" "$MSG_MEMORY" "$MSG_STORAGE" "$MSG_BATTERY"
-    printf '  \033[1;32m07\033[0m  %s\n  \033[1;32m08\033[0m  %s\n  \033[1;32m09\033[0m  %s\n  \033[1;32m10\033[0m  %s\n  \033[1;32m11\033[0m  %s\n  \033[1;32m12\033[0m  %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM" "$MSG_SENSORS" "$MSG_NETWORK" "$MSG_DIAG" "$MSG_SETTINGS"
+    printf '  \033[1;32m01\033[0m %s\n  \033[1;32m02\033[0m %s\n  \033[1;32m03\033[0m %s\n  \033[1;32m04\033[0m %s\n  \033[1;32m05\033[0m %s\n  \033[1;32m06\033[0m %s\n' "$MSG_OVERVIEW" "$MSG_CPU" "$MSG_GPU" "$MSG_MEMORY" "$MSG_STORAGE" "$MSG_BATTERY"
+    printf '  \033[1;32m07\033[0m %s\n  \033[1;32m08\033[0m %s\n  \033[1;32m09\033[0m %s\n  \033[1;32m10\033[0m %s\n  \033[1;32m11\033[0m %s\n  \033[1;32m12\033[0m %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM" "$MSG_SENSORS" "$MSG_NETWORK" "$MSG_DIAG" "$MSG_SETTINGS"
   fi
 }
 
@@ -71,18 +74,23 @@ dashboard_metric() {
   local label="$1" summary="$2" percent="$3" color="$4"
   local width bar filled empty fill emptybar
   width="$(ui_width)"
-  bar=$((width-47))
-  (( bar < 3 )) && bar=3
-  (( bar > 20 )) && bar=20
   [[ "$percent" =~ ^[0-9]+$ ]] || percent=0
   (( percent > 100 )) && percent=100
+  if (( width < 48 )); then
+    printf '\033[1;32m  ▸ %-8.8s\033[0m %3s%%\n' "$label" "$percent"
+    printf '    \033[1;37m%s\033[0m\n' "$summary"
+    return
+  fi
+  bar=$((width-48))
+  (( bar < 3 )) && bar=3
+  (( bar > 18 )) && bar=18
   filled=$((percent*bar/100))
   empty=$((bar-filled))
   printf -v fill '%*s' "$filled" ''
   fill="${fill// /█}"
   printf -v emptybar '%*s' "$empty" ''
   emptybar="${emptybar// /░}"
-  printf '\033[1;32m  ▸\033[0m %-9.9s \033[1;37m%-*.*s\033[0m \033[1;%sm%s%s\033[0m %3s%%\n' "$label" 17 17 "$summary" "$color" "$fill" "$emptybar" "$percent"
+  printf '\033[1;32m  ▸\033[0m %-9.9s \033[1;37m%-17.17s\033[0m \033[1;%sm%s%s\033[0m %3s%%\n' "$label" "$summary" "$color" "$fill" "$emptybar" "$percent"
 }
 
 settings_menu() {
@@ -90,7 +98,7 @@ settings_menu() {
   while true; do
     title "$MSG_SETTINGS"
     printf '  \033[1;32m[1]\033[0m Tiếng Việt\n  \033[1;32m[2]\033[0m English\n  \033[1;32m[0]\033[0m %s\n' "$MSG_BACK"
-    read -r -p "  $MSG_PROMPT " choice || return
+    read -r -p "  $MSG_PROMPT > " choice || return
     case "$choice" in
       1) printf 'vi\n' > "$CONFIG/lang"; source "$ROOT/locales/vi.sh"; break ;;
       2) printf 'en\n' > "$CONFIG/lang"; source "$ROOT/locales/en.sh"; break ;;
