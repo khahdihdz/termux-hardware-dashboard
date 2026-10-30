@@ -144,15 +144,34 @@ memory_percent() {
 }
 
 battery_summary() {
-  local b=/sys/class/power_supply/battery
+  local b=/sys/class/power_supply/battery json percentage status
   if [[ -r "$b/capacity" ]]; then
     printf '%s%% · %s' "$(cat "$b/capacity")" "$(cat "$b/status" 2>/dev/null || echo unknown)"
-  else
-    printf '%s' "N/A"
+    return
   fi
+  if command -v termux-battery-status >/dev/null 2>&1; then
+    json="$(termux-battery-status 2>/dev/null || true)"
+    percentage="$(battery_json_value "$json" percentage)"
+    status="$(battery_json_value "$json" status)"
+    if [[ "$percentage" =~ ^[0-9]+$ ]]; then
+      printf '%s%% · %s' "$percentage" "${status:-unknown}"
+      return
+    fi
+  fi
+  printf '%s' "N/A"
 }
 
-battery_percent() { cat /sys/class/power_supply/battery/capacity 2>/dev/null || echo 0; }
+battery_percent() {
+  local value
+  if [[ -r /sys/class/power_supply/battery/capacity ]]; then
+    cat /sys/class/power_supply/battery/capacity
+  elif command -v termux-battery-status >/dev/null 2>&1; then
+    value="$(battery_json_value "$(termux-battery-status 2>/dev/null || true)" percentage)"
+    [[ "$value" =~ ^[0-9]+$ ]] && printf '%s\n' "$value" || printf '0\n'
+  else
+    printf '0\n'
+  fi
+}
 storage_summary() { df -h "$HOME" 2>/dev/null | awk 'NR==2 {printf "%s/%s", $3,$2}'; }
 storage_percent() { df "$HOME" 2>/dev/null | awk 'NR==2 {gsub(/%/,"",$5); print $5+0}'; }
 
