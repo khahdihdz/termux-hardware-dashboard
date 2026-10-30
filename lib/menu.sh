@@ -92,8 +92,8 @@ settings_menu() {
     printf '  \033[1;32m[1]\033[0m Tiếng Việt\n  \033[1;32m[2]\033[0m English\n  \033[1;32m[0]\033[0m %s\n' "$MSG_BACK"
     read -r -p "  $MSG_PROMPT " choice || return
     case "$choice" in
-      1) printf 'vi\n' > "$CONFIG/lang"; LANG_CODE=vi; source "$ROOT/locales/vi.sh"; break ;;
-      2) printf 'en\n' > "$CONFIG/lang"; LANG_CODE=en; source "$ROOT/locales/en.sh"; break ;;
+      1) printf 'vi\n' > "$CONFIG/lang"; source "$ROOT/locales/vi.sh"; break ;;
+      2) printf 'en\n' > "$CONFIG/lang"; source "$ROOT/locales/en.sh"; break ;;
       0|q|Q|'') break ;;
       *) printf '  %s\n' "$MSG_INVALID"; sleep 1 ;;
     esac
