@@ -70,7 +70,14 @@ render_dashboard() {
 
 dashboard_metric() {
   local label="$1" summary="$2" percent="$3" color="$4"
-  local width bar filled empty
+  local width bar filled empty color_code
+  case "$color" in
+    cyan) color_code=36 ;;
+    green) color_code=32 ;;
+    yellow) color_code=33 ;;
+    magenta) color_code=35 ;;
+    *) color_code=37 ;;
+  esac
   width="$(tput cols 2>/dev/null || echo 80)"
   (( width > 76 )) && width=76
   (( width < 40 )) && width=40
@@ -82,7 +89,7 @@ dashboard_metric() {
   filled=$((percent*bar/100)); empty=$((bar-filled))
   printf -v _fill '%*s' "$filled" ''; _fill="${_fill// /█}"
   printf -v _empty '%*s' "$empty" ''; _empty="${_empty// /░}"
-  printf '\033[1;36m  │\033[0m  \033[1;37m%-9s\033[0m %-*s \033[1;%sm%s%s\033[0m %3s%% \033[1;36m│\033[0m\n' "$label" 15 "$summary" 36 "$_fill" "$_empty" "$percent"
+  printf '\033[1;36m  │\033[0m  \033[1;37m%-9s\033[0m %-*s \033[1;%sm%s%s\033[0m %3s%% \033[1;36m│\033[0m\n' "$label" 15 "$summary" "$color_code" "$_fill" "$_empty" "$percent"
 }
 
 cpu_summary() {
@@ -92,8 +99,9 @@ cpu_summary() {
   printf '%s · %s cores' "${model:0:18}" "$cores"
 }
 cpu_percent() {
-  local load
-  load="$(awk '{print int(($1/('$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)'))*100)}' /proc/loadavg 2>/dev/null || echo 0)"
+  local load cores
+  cores="$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)"
+  load="$(awk -v cores="$cores" 'BEGIN { if (cores < 1) cores=1 } { print int(($1/cores)*100) }' /proc/loadavg 2>/dev/null || echo 0)"
   (( load > 100 )) && load=100
   echo "$load"
 }
