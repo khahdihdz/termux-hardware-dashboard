@@ -44,9 +44,14 @@ show_storage() {
   df -h "$HOME" /storage/emulated/0 2>/dev/null | awk 'NR==1 || !seen[$1]++'
 }
 
+battery_json_value() {
+  local json="$1" key="$2"
+  printf '%s\n' "$json" | sed -nE "s/.*\\"$key\\"[[:space:]]*:[[:space:]]*\\"?([^\\",}]+)\\"?.*/\\1/p" | head -n1
+}
+
 show_battery() {
   local b=/sys/class/power_supply/battery
-  local found=0 f value
+  local found=0 f value api_json
   for f in capacity status health temperature voltage_now current_now charge_full charge_full_design; do
     [[ -r "$b/$f" ]] || continue
     found=1
@@ -59,7 +64,12 @@ show_battery() {
     printf '%-18s %s\n' "$f" "$value"
   done
   if (( ! found )) && command -v termux-battery-status >/dev/null 2>&1; then
-    termux-battery-status 2>/dev/null || printf '%s\n' "$MSG_DATA_UNAVAILABLE"
+    api_json="$(termux-battery-status 2>/dev/null || true)"
+    if [[ -n "$api_json" && "$api_json" != "{}" ]]; then
+      printf '%s\n' "$api_json"
+    else
+      printf '%s\n' "$MSG_BATTERY_API_FAILED"
+    fi
   elif (( ! found )); then
     printf '%s\n' "$MSG_DATA_UNAVAILABLE"
     printf '%s\n' "$MSG_BATTERY_API_HINT"
