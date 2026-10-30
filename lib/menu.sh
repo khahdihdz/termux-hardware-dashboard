@@ -154,7 +154,7 @@ battery_summary() {
     percentage="$(battery_json_value "$json" percentage)"
     status="$(battery_json_value "$json" status)"
     if [[ "$percentage" =~ ^[0-9]+$ ]]; then
-      printf '%s%% · %s' "$percentage" "${status:-unknown}"
+      printf '%s%% · %s' "$percentage" "$(battery_translate status "${status:-unknown}")"
       return
     fi
   fi
