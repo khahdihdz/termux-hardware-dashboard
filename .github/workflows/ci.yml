@@ -1,0 +1,24 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax
+        run: find . -type f \( -name '*.sh' -o -name hwinfo \) -print0 | xargs -0 -n1 bash -n
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: .
+          severity: warning
+      - name: Website checks
+        run: |
+          test -s website/index.html
+          test -s website/vi/index.html
+          test -s website/en/index.html
+          test -s website/assets/images/og-thumbnail.svg

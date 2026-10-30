@@ -1,0 +1,20 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate shell
+        run: find . -type f \( -name '*.sh' -o -name hwinfo \) -print0 | xargs -0 -n1 bash -n
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            install.sh
+            uninstall.sh
+            update.sh
