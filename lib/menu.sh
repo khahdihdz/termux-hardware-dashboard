@@ -18,6 +18,7 @@ main_menu() {
       10) section "$MSG_NETWORK" show_network ;;
       11) section "$MSG_DIAG" diagnostics ;;
       12) settings_menu ;;
+      13) api_tools_menu ;;
       0|q|Q) break ;;
       r|R|'') continue ;;
       *) printf '\n  \033[1;31m[!] %s\033[0m\n' "$MSG_INVALID"; sleep 1 ;;
@@ -64,9 +65,10 @@ render_menu_items() {
     printf '  \033[1;32m07\033[0m %-16s  \033[1;32m08\033[0m %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM"
     printf '  \033[1;32m09\033[0m %-16s  \033[1;32m10\033[0m %s\n' "$MSG_SENSORS" "$MSG_NETWORK"
     printf '  \033[1;32m11\033[0m %-16s  \033[1;32m12\033[0m %s\n' "$MSG_DIAG" "$MSG_SETTINGS"
+    printf '  \033[1;32m13\033[0m %s\n' "$MSG_API_CENTER"
   else
     printf '  \033[1;32m01\033[0m %s\n  \033[1;32m02\033[0m %s\n  \033[1;32m03\033[0m %s\n  \033[1;32m04\033[0m %s\n  \033[1;32m05\033[0m %s\n  \033[1;32m06\033[0m %s\n' "$MSG_OVERVIEW" "$MSG_CPU" "$MSG_GPU" "$MSG_MEMORY" "$MSG_STORAGE" "$MSG_BATTERY"
-    printf '  \033[1;32m07\033[0m %s\n  \033[1;32m08\033[0m %s\n  \033[1;32m09\033[0m %s\n  \033[1;32m10\033[0m %s\n  \033[1;32m11\033[0m %s\n  \033[1;32m12\033[0m %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM" "$MSG_SENSORS" "$MSG_NETWORK" "$MSG_DIAG" "$MSG_SETTINGS"
+    printf '  \033[1;32m07\033[0m %s\n  \033[1;32m08\033[0m %s\n  \033[1;32m09\033[0m %s\n  \033[1;32m10\033[0m %s\n  \033[1;32m11\033[0m %s\n  \033[1;32m12\033[0m %s\n  \033[1;32m13\033[0m %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM" "$MSG_SENSORS" "$MSG_NETWORK" "$MSG_DIAG" "$MSG_SETTINGS" "$MSG_API_CENTER"
   fi
 }
 
@@ -171,17 +173,4 @@ battery_percent() {
   else
     printf '0\n'
   fi
-}
-storage_summary() { df -h "$HOME" 2>/dev/null | awk 'NR==2 {printf "%s/%s", $3,$2}'; }
-storage_percent() { df "$HOME" 2>/dev/null | awk 'NR==2 {gsub(/%/,"",$5); print $5+0}'; }
-
-device_summary() {
-  local maker model
-  maker="$(getprop ro.product.manufacturer 2>/dev/null)"
-  model="$(getprop ro.product.model 2>/dev/null)"
-  printf '%s %s' "${maker:-Android}" "${model:-device}"
-}
-
-system_summary() {
-  printf 'Android %s · %s' "$(getprop ro.build.version.release 2>/dev/null || echo '?')" "$(uname -r)"
 }
