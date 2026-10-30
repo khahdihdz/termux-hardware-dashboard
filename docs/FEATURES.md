@@ -1,0 +1,1 @@
+# Features / Tính năng\n\n- Device overview, CPU, GPU, RAM, storage, battery, display, Android/kernel, sensors and network.\n- Bilingual terminal interface.\n- Diagnostics for exposed interfaces.\n- User-space installer, updater backup and uninstaller.\n- No root, database, telemetry or background service.\n

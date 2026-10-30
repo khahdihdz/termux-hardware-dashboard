@@ -1,0 +1,1 @@
+# Changelog\n\n## 1.0.0 — Initial implementation\n- Bilingual terminal dashboard and diagnostics.\n- Installer, updater with backup, and uninstaller.\n- Bilingual GitHub Pages landing site and CI workflows.\n

@@ -1,0 +1,1 @@
+# Contributing\n\n1. Fork and create a focused branch.\n2. Keep scripts compatible with Termux Bash and Android restrictions.\n3. Never assume root or readable sysfs nodes.\n4. Run bash -n and ShellCheck.\n5. Keep Vietnamese and English translations in sync.\n
