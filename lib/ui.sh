@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Shared terminal UI: compact cyber/HUD style, safe on narrow Termux screens.
 ui_width() {
   local cols
   cols="$(tput cols 2>/dev/null || printf '80')"
@@ -12,25 +13,26 @@ ui_width() {
 ui_rule() {
   local width line
   width="$(ui_width)"
-  printf -v line '%*s' "$((width-4))" ''
-  line="${line// /─}"
-  printf '\033[1;36m  ├%s┤\033[0m\n' "$line"
+  printf -v line '%*s' "$((width-6))" ''
+  line="${line// /━}"
+  printf '\033[1;32m  ┣%s┫\033[0m\n' "$line"
 }
 
 ui_header() {
-  local heading="$1" width line
+  local heading="$1" width inner stamp
   width="$(ui_width)"
-  printf -v line '%*s' "$((width-4))" ''
-  line="${line// /─}"
-  printf '\033[1;36m  ╭%s╮\033[0m\n' "$line"
-  printf '\033[1;36m  │\033[0m  \033[1;37m%-*s\033[0m\033[1;36m│\033[0m\n' "$((width-6))" "$heading"
-  printf '\033[1;36m  │\033[0m  \033[2m%-*s\033[0m\033[1;36m│\033[0m\n' "$((width-6))" "$(date '+%H:%M:%S  %d-%m-%Y' 2>/dev/null)"
+  inner=$((width-6))
+  stamp="$(date '+%H:%M:%S  %d-%m-%Y' 2>/dev/null)"
+  printf '\033[1;32m  ┏%*s┓\033[0m\n' "$((width-6))" '' | sed 's/ /━/g'
+  printf '\033[1;32m  ┃\033[0m \033[1;32m[ SYSTEM ONLINE ]\033[0m  \033[1;37m%-*.*s\033[0m\n' "$((inner-20))" "$((inner-20))" "$heading"
+  printf '\033[1;32m  ┃\033[0m \033[2m%-*.*s\033[0m\n' "$((inner-2))" "$((inner-2))" "$stamp"
   ui_rule
 }
 
 ui_footer() {
   local hint="$1"
   ui_rule
+  printf '\033[1;32m  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\033[0m\n' | cut -c1-"$(($(ui_width)+2))"
   printf '\033[2m  %s\033[0m\n' "$hint"
 }
 
