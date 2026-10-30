@@ -5,6 +5,6 @@ ROOT="$HOME/.local/share/termux-hardware-dashboard"
 CONFIG="$HOME/.config/termux-hardware-dashboard"
 mkdir -p "$CONFIG"
 for f in "$ROOT"/lib/*.sh; do [[ -f "$f" ]] && source "$f"; done
-lang="$(cat "$CONFIG/lang" 2>/dev/null || echo vi)"
-source "$ROOT/locales/$lang.sh"
+LANG_CODE="$(cat "$CONFIG/lang" 2>/dev/null || printf 'vi')"
+case "$LANG_CODE" in en) source "$ROOT/locales/en.sh" ;; *) LANG_CODE=vi; source "$ROOT/locales/vi.sh" ;; esac
 main_menu
