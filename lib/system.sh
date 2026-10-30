@@ -46,7 +46,16 @@ show_storage() {
 
 battery_json_value() {
   local json="$1" key="$2"
-  printf '%s\n' "$json" | sed -nE "s/.*\\"$key\\"[[:space:]]*:[[:space:]]*\\"?([^\\",}]+)\\"?.*/\\1/p" | head -n1
+  printf '%s\n' "$json" | awk -v key="$key" '
+    { pattern="\\\"" key "\\\"[[:space:]]*:[[:space:]]*\\\"?[^\\\",}]+" }
+    match($0, pattern) {
+      value=substr($0, RSTART, RLENGTH)
+      sub(/^.*:[[:space:]]*\\\"?/, "", value)
+      sub(/\\\"$/, "", value)
+      print value
+      exit
+    }
+  '
 }
 
 show_battery() {
