@@ -47,13 +47,18 @@ show_storage() {
 battery_json_value() {
   local json="$1" key="$2"
   printf '%s\n' "$json" | awk -v key="$key" '
-    { pattern="\\\"" key "\\\"[[:space:]]*:[[:space:]]*\\\"?[^\\\",}]+" }
-    match($0, pattern) {
-      value=substr($0, RSTART, RLENGTH)
-      sub(/^.*:[[:space:]]*\\\"?/, "", value)
-      sub(/\\\"$/, "", value)
-      print value
-      exit
+    {
+      needle="\"" key "\""
+      pos=index($0, needle)
+      if (pos) {
+        value=substr($0, pos+length(needle))
+        sub(/^[[:space:]]*:[[:space:]]*"?/, "", value)
+        sub(/".*$/, "", value)
+        sub(/[,}].*$/, "", value)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+        print value
+        exit
+      }
     }
   '
 }
