@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 show_cpu() {
-  local model cores load i freq min max governor
+  local model cores load i freq governor
   model="$(getprop ro.soc.model 2>/dev/null || getprop ro.hardware 2>/dev/null || uname -m)"
   cores="$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo '?')"
   printf '%s: %s\n' "$MSG_SOC" "$model"
@@ -24,10 +24,10 @@ show_cpu() {
       printf '  CPU%-2s %s\n' "$i" "$MSG_DATA_UNAVAILABLE"
     fi
   done
-  [[ -r /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ]] && {
+  if [[ -r /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ]]; then
     governor="$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)"
     printf '%s: %s\n' "$MSG_CPU_GOVERNOR" "$governor"
-  }
+  fi
 }
 
 show_memory() {
@@ -69,8 +69,6 @@ show_battery() {
 show_display() {
   wm size 2>/dev/null || printf '%s\n' "$MSG_DATA_UNAVAILABLE"
   wm density 2>/dev/null || true
-  printf 'Resolution override: '
-  wm size 2>/dev/null | tail -1
 }
 
 show_system() {
