@@ -1,0 +1,2 @@
+MSG_SUBTITLE="Android hardware • No root required"
+MSG_OVERVIEW="Overview"; MSG_CPU="CPU"; MSG_GPU="GPU"; MSG_MEMORY="Memory"; MSG_STORAGE="Storage"; MSG_BATTERY="Battery"; MSG_DISPLAY="Display"; MSG_SYSTEM="System"; MSG_SENSORS="Sensors"; MSG_NETWORK="Network"; MSG_DIAG="Diagnostics"; MSG_SETTINGS="Settings"; MSG_EXIT="Exit"; MSG_CHOICE="Choose:"; MSG_CONTINUE="Press Enter to continue..."; MSG_INVALID="Invalid choice."

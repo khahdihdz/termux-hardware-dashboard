@@ -1,0 +1,10 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -Eeuo pipefail
+APP_VERSION=1.0.0
+ROOT="$HOME/.local/share/termux-hardware-dashboard"
+CONFIG="$HOME/.config/termux-hardware-dashboard"
+mkdir -p "$CONFIG"
+for f in "$ROOT"/lib/*.sh; do [[ -f "$f" ]] && source "$f"; done
+lang="$(cat "$CONFIG/lang" 2>/dev/null || echo vi)"
+source "$ROOT/locales/$lang.sh"
+main_menu
