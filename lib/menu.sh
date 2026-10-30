@@ -4,7 +4,7 @@ main_menu() {
   local choice
   while true; do
     render_dashboard
-    read -r -p "  $MSG_CHOICE " choice || break
+    read -r -p "  $MSG_PROMPT " choice || break
     case "$choice" in
       1) section "$MSG_OVERVIEW" show_overview ;;
       2) section "$MSG_CPU" show_cpu ;;
@@ -20,22 +20,33 @@ main_menu() {
       12) settings_menu ;;
       0|q|Q) break ;;
       r|R|'') continue ;;
-      *) printf '\n  %s\n' "$MSG_INVALID"; sleep 1 ;;
+      *) printf '\n  \033[1;31m[!] %s\033[0m\n' "$MSG_INVALID"; sleep 1 ;;
     esac
   done
 }
 
 render_dashboard() {
   clear 2>/dev/null || true
-  ui_header "⌁  TERMUX HARDWARE DASHBOARD  v$APP_VERSION"
-  printf '\033[1;36m  │\033[0m  %s\n' "$MSG_SUBTITLE"
-  dashboard_metric "$MSG_CPU" "$(cpu_summary)" "$(cpu_percent)" 36
-  dashboard_metric "$MSG_MEMORY" "$(memory_summary)" "$(memory_percent)" 32
+  printf '\033[1;32m'
+  printf '  ████████╗███████╗██████╗ ███╗   ███╗██╗   ██╗██╗  ██╗\n'
+  printf '  ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║   ██║╚██╗██╔╝\n'
+  printf '     ██║   █████╗  ██████╔╝██╔████╔██║██║   ██║ ╚███╔╝ \n'
+  printf '     ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║   ██║ ██╔██╗ \n'
+  printf '     ██║   ███████╗██║  ██║██║ ╚═╝ ██║╚██████╔╝██╔╝ ██╗\n'
+  printf '     ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝\n'
+  printf '\033[0m'
+  ui_header "HARDWARE CONTROL CENTER  v$APP_VERSION"
+  printf '\033[1;32m  [*]\033[0m %s\n' "$MSG_SUBTITLE"
+  printf '\033[1;32m  [*]\033[0m %s: \033[1;37m%s\033[0m\n' "$MSG_DEVICE" "$(device_summary)"
+  printf '\033[1;32m  [*]\033[0m %s\n' "$(system_summary)"
+  ui_rule
+  printf '\033[1;37m  %-10s %-*s %s\n\033[0m' "$MSG_RESOURCE" 18 "$MSG_TELEMETRY" "$MSG_LOAD"
+  dashboard_metric "$MSG_CPU" "$(cpu_summary)" "$(cpu_percent)" 32
+  dashboard_metric "$MSG_MEMORY" "$(memory_summary)" "$(memory_percent)" 36
   dashboard_metric "$MSG_BATTERY" "$(battery_summary)" "$(battery_percent)" 33
   dashboard_metric "$MSG_STORAGE" "$(storage_summary)" "$(storage_percent)" 35
-  printf '\033[1;36m  │\033[0m  %s: %s\n' "$MSG_DEVICE" "$(device_summary)"
-  printf '\033[1;36m  │\033[0m  %s\n' "$(system_summary)"
   ui_rule
+  printf '\033[1;32m  [ MODULES ]\033[0m\n'
   render_menu_items
   ui_footer "[0] $MSG_EXIT   [R] $MSG_REFRESH"
 }
@@ -44,42 +55,42 @@ render_menu_items() {
   local width
   width="$(ui_width)"
   if (( width >= 64 )); then
-    printf '  \033[1;36m[1]\033[0m %-18s \033[1;36m[2]\033[0m %s\n' "$MSG_OVERVIEW" "$MSG_CPU"
-    printf '  \033[1;36m[3]\033[0m %-18s \033[1;36m[4]\033[0m %s\n' "$MSG_GPU" "$MSG_MEMORY"
-    printf '  \033[1;36m[5]\033[0m %-18s \033[1;36m[6]\033[0m %s\n' "$MSG_STORAGE" "$MSG_BATTERY"
-    printf '  \033[1;36m[7]\033[0m %-18s \033[1;36m[8]\033[0m %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM"
-    printf '  \033[1;36m[9]\033[0m %-18s \033[1;36m[10]\033[0m %s\n' "$MSG_SENSORS" "$MSG_NETWORK"
-    printf '  \033[1;36m[11]\033[0m %-18s \033[1;36m[12]\033[0m %s\n' "$MSG_DIAG" "$MSG_SETTINGS"
+    printf '  \033[1;32m01\033[0m  %-17s  \033[1;32m02\033[0m  %s\n' "$MSG_OVERVIEW" "$MSG_CPU"
+    printf '  \033[1;32m03\033[0m  %-17s  \033[1;32m04\033[0m  %s\n' "$MSG_GPU" "$MSG_MEMORY"
+    printf '  \033[1;32m05\033[0m  %-17s  \033[1;32m06\033[0m  %s\n' "$MSG_STORAGE" "$MSG_BATTERY"
+    printf '  \033[1;32m07\033[0m  %-17s  \033[1;32m08\033[0m  %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM"
+    printf '  \033[1;32m09\033[0m  %-17s  \033[1;32m10\033[0m  %s\n' "$MSG_SENSORS" "$MSG_NETWORK"
+    printf '  \033[1;32m11\033[0m  %-17s  \033[1;32m12\033[0m  %s\n' "$MSG_DIAG" "$MSG_SETTINGS"
   else
-    printf '  [1] %s\n  [2] %s\n  [3] %s\n  [4] %s\n  [5] %s\n  [6] %s\n' "$MSG_OVERVIEW" "$MSG_CPU" "$MSG_GPU" "$MSG_MEMORY" "$MSG_STORAGE" "$MSG_BATTERY"
-    printf '  [7] %s\n  [8] %s\n  [9] %s\n  [10] %s\n  [11] %s\n  [12] %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM" "$MSG_SENSORS" "$MSG_NETWORK" "$MSG_DIAG" "$MSG_SETTINGS"
+    printf '  \033[1;32m01\033[0m  %s\n  \033[1;32m02\033[0m  %s\n  \033[1;32m03\033[0m  %s\n  \033[1;32m04\033[0m  %s\n  \033[1;32m05\033[0m  %s\n  \033[1;32m06\033[0m  %s\n' "$MSG_OVERVIEW" "$MSG_CPU" "$MSG_GPU" "$MSG_MEMORY" "$MSG_STORAGE" "$MSG_BATTERY"
+    printf '  \033[1;32m07\033[0m  %s\n  \033[1;32m08\033[0m  %s\n  \033[1;32m09\033[0m  %s\n  \033[1;32m10\033[0m  %s\n  \033[1;32m11\033[0m  %s\n  \033[1;32m12\033[0m  %s\n' "$MSG_DISPLAY" "$MSG_SYSTEM" "$MSG_SENSORS" "$MSG_NETWORK" "$MSG_DIAG" "$MSG_SETTINGS"
   fi
 }
 
 dashboard_metric() {
   local label="$1" summary="$2" percent="$3" color="$4"
-  local width bar filled empty
+  local width bar filled empty fill emptybar
   width="$(ui_width)"
-  bar=$((width-38))
-  (( bar < 4 )) && bar=4
-  (( bar > 28 )) && bar=28
+  bar=$((width-47))
+  (( bar < 3 )) && bar=3
+  (( bar > 20 )) && bar=20
   [[ "$percent" =~ ^[0-9]+$ ]] || percent=0
   (( percent > 100 )) && percent=100
   filled=$((percent*bar/100))
   empty=$((bar-filled))
-  printf -v _fill '%*s' "$filled" ''
-  _fill="${_fill// /█}"
-  printf -v _empty '%*s' "$empty" ''
-  _empty="${_empty// /░}"
-  printf '\033[1;36m  │\033[0m  \033[1;37m%-8.8s\033[0m %-*.*s \033[1;%sm%s%s\033[0m %3s%%\n' "$label" 16 16 "$summary" "$color" "$_fill" "$_empty" "$percent"
+  printf -v fill '%*s' "$filled" ''
+  fill="${fill// /█}"
+  printf -v emptybar '%*s' "$empty" ''
+  emptybar="${emptybar// /░}"
+  printf '\033[1;32m  ▸\033[0m %-9.9s \033[1;37m%-*.*s\033[0m \033[1;%sm%s%s\033[0m %3s%%\n' "$label" 17 17 "$summary" "$color" "$fill" "$emptybar" "$percent"
 }
 
 settings_menu() {
   local choice
   while true; do
     title "$MSG_SETTINGS"
-    printf '  [1] Tiếng Việt\n  [2] English\n  [0] %s\n' "$MSG_BACK"
-    read -r -p "  $MSG_CHOICE " choice || return
+    printf '  \033[1;32m[1]\033[0m Tiếng Việt\n  \033[1;32m[2]\033[0m English\n  \033[1;32m[0]\033[0m %s\n' "$MSG_BACK"
+    read -r -p "  $MSG_PROMPT " choice || return
     case "$choice" in
       1) printf 'vi\n' > "$CONFIG/lang"; LANG_CODE=vi; source "$ROOT/locales/vi.sh"; break ;;
       2) printf 'en\n' > "$CONFIG/lang"; LANG_CODE=en; source "$ROOT/locales/en.sh"; break ;;
