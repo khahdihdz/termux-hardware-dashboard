@@ -63,6 +63,27 @@ battery_json_value() {
   '
 }
 
+battery_translate() {
+  local field="$1" value="$2"
+  case "$field:$value" in
+    status:CHARGING) printf '%s' "$MSG_BATTERY_CHARGING" ;;
+    status:DISCHARGING) printf '%s' "$MSG_BATTERY_DISCHARGING" ;;
+    status:NOT_CHARGING) printf '%s' "$MSG_BATTERY_NOT_CHARGING" ;;
+    status:FULL) printf '%s' "$MSG_BATTERY_FULL" ;;
+    health:GOOD) printf '%s' "$MSG_BATTERY_HEALTH_GOOD" ;;
+    health:OVERHEAT) printf '%s' "$MSG_BATTERY_OVERHEAT" ;;
+    health:DEAD) printf '%s' "$MSG_BATTERY_HEALTH_DEAD" ;;
+    health:OVER_VOLTAGE) printf '%s' "$MSG_BATTERY_OVER_VOLTAGE" ;;
+    health:UNSPECIFIED_FAILURE) printf '%s' "$MSG_BATTERY_HEALTH_UNKNOWN" ;;
+    plugged:PLUGGED_AC) printf '%s' "$MSG_BATTERY_AC" ;;
+    plugged:PLUGGED_USB) printf '%s' "$MSG_BATTERY_USB" ;;
+    plugged:PLUGGED_WIRELESS) printf '%s' "$MSG_BATTERY_WIRELESS" ;;
+    plugged:PLUGGED_DOCK) printf '%s' "$MSG_BATTERY_DOCK" ;;
+    plugged:UNPLUGGED) printf '%s' "$MSG_BATTERY_UNPLUGGED" ;;
+    *) printf '%s' "$value" ;;
+  esac
+}
+
 show_battery() {
   local b=/sys/class/power_supply/battery
   local found=0 f value api_json
@@ -80,7 +101,22 @@ show_battery() {
   if (( ! found )) && command -v termux-battery-status >/dev/null 2>&1; then
     api_json="$(termux-battery-status 2>/dev/null || true)"
     if [[ -n "$api_json" && "$api_json" != "{}" ]]; then
-      printf '%s\n' "$api_json"
+      local key raw translated label
+      for key in percentage status health plugged temperature voltage current technology; do
+        raw="$(battery_json_value "$api_json" "$key")"
+        [[ -n "$raw" ]] || continue
+        case "$key" in
+          percentage) label="$MSG_BATTERY_PERCENT"; translated="$raw%" ;;
+          status) label="$MSG_BATTERY_STATUS"; translated="$(battery_translate status "$raw")" ;;
+          health) label="$MSG_BATTERY_HEALTH"; translated="$(battery_translate health "$raw")" ;;
+          plugged) label="$MSG_BATTERY_POWER_SOURCE"; translated="$(battery_translate plugged "$raw")" ;;
+          temperature) label="$MSG_BATTERY_TEMPERATURE"; translated="$raw °C" ;;
+          voltage) label="$MSG_BATTERY_VOLTAGE"; translated="$raw mV" ;;
+          current) label="$MSG_BATTERY_CURRENT"; translated="$raw mA" ;;
+          technology) label="$MSG_BATTERY_TECHNOLOGY"; translated="$raw" ;;
+        esac
+        printf '%-20s %s\n' "$label" "$translated"
+      done
     else
       printf '%s\n' "$MSG_BATTERY_API_FAILED"
     fi
